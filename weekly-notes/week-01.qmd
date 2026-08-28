@@ -35,9 +35,9 @@ sessionInfo()$R.version$version.string
 
 <!-- CHANGE THIS: 3-4 sentences -->
 
-What I want out of this course:
+What I want out of this course: I want to be capable of doing spatial analysis and creating a clear, easy to understand visualization
 
-One thing I'm nervous about:
+One thing I'm nervous about: I am not familar with coding
 
 ## Questions I Still Have
 
