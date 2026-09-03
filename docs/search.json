@@ -46,7 +46,7 @@
     "href": "weekly-notes/week-01.html#key-concepts",
     "title": "Week 1: Getting Set Up",
     "section": "Key Concepts",
-    "text": "Key Concepts\nThree places a file can live:\n\nMy computer — where I edit\nGitHub.com — where it’s stored\nMy live site — what the world sees\n\nRENDER\nWhat happens in the machine?\n\nRead file from top to bottom\nFind code chunks\nSend them to R, gets results back\nGlue text + results into html\n\nThe loop: Edit → Save → Render → Commit → Push → wait → refresh"
+    "text": "Key Concepts\nThree places a file can live:\n\nMy computer — where I edit\nGitHub.com — where it’s stored\nMy live site — what the world sees\n\nRENDER. What happens in the machine?\n\nRead file from top to bottom\nFind code chunks\nSend them to R, gets results back\nGlue text + results into html\n\nThe loop: Edit → Save → Render → Commit → Push → wait → refresh"
   },
   {
     "objectID": "weekly-notes/week-01.html#proving-r-works",

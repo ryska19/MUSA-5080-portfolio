@@ -21,9 +21,7 @@ Three places a file can live:
 3. **My live site** — what the world sees
 
 
-**RENDER**
-
-What happens in the machine?
+**RENDER**. What happens in the machine?
 
 1. Read file from top to bottom
 2. Find code chunks
