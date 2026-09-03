@@ -20,6 +20,17 @@ Three places a file can live:
 2. **GitHub.com** — where it's stored
 3. **My live site** — what the world sees
 
+
+**RENDER**
+
+What happens in the machine?
+
+1. Read file from top to bottom
+2. Find code chunks
+3. Send them to R, gets results back 
+4. Glue text + results into html
+
+
 The loop: **Edit → Save → Render → Commit → Push → wait → refresh**
 
 ## Proving R Works
@@ -35,11 +46,10 @@ sessionInfo()$R.version$version.string
 
 <!-- CHANGE THIS: 3-4 sentences -->
 
-What I want out of this course: I want to be capable of doing spatial analysis and creating a clear, easy to understand visualization
+What I want out of this course: to be capable of doing spatial analysis and creating a clear, easy to understand visualization
 
 One thing I'm nervous about: I am not familar with coding
 
 ## Questions I Still Have
 
--
 -
