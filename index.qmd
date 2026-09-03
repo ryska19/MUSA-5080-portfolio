@@ -9,7 +9,7 @@ title: "Home"
 Welcome to my portfolio for **MUSA 5080: Public Policy Analytics** at the
 University of Pennsylvania.
 
-This site documents my work in the Master of Urban Spatial Analytics program —
+This site documents my work in the Master of City Planning program —
 weekly notes, course assignments, and a final project applying data analysis to
 urban policy questions.
 
@@ -18,7 +18,7 @@ urban policy questions.
 <!-- CHANGE THIS: two or three sentences about yourself -->
 
 I'm a student in the MCP program at Penn. My background is in
-city planning, and I'm interested in transportation planning.
+government budget planning, and I'm interested in transportation planning.
 
 ## What You'll Find Here
 
