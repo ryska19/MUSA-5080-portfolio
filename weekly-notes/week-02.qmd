@@ -1,6 +1,29 @@
 ---
-title: "Week 2: Census Data"
-description: "One line about this page."
-date: 2026-09-05
+title: "Week 2: dplyr and Census"
+description: "table functions and acs data."
+date: 2026-09-04
 ---
+
+## What We Did
+
+<!-- CHANGE THIS: replace with your own notes -->
+
+First we had our questions answered. And then we had a quiz
+
+## Key Concepts
+
+
+The loop: **Edit → Save → Render → Commit → Push → wait → refresh**
+
+
+
+## Reflection
+
+<!-- CHANGE THIS: 3-4 sentences -->
+
+
+
+## Questions I Still Have
+
+-
 
