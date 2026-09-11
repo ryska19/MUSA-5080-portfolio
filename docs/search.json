@@ -53,7 +53,7 @@
     "href": "weekly-notes/index.html",
     "title": "Weekly Notes",
     "section": "",
-    "text": "Notes from each week of MUSA 5080. New entries appear here automatically — add a .qmd file to this folder and render.\n\n\n\n\n\n\n\n\n\n\n\nWeek 2: dplyr and Census\n\n\ntable functions and acs data.\n\n\n\n\n\nSep 4, 2026\n\n\n\n\n\n\n\nWeek 1: Getting Set Up\n\n\nFirst impressions, and getting the workflow running.\n\n\n\n\n\nAug 28, 2026\n\n\n\n\n\nNo matching items"
+    "text": "Notes from each week of MUSA 5080. New entries appear here automatically — add a .qmd file to this folder and render.\n\n\n\n\n\n\n\n\n\n\n\nWeek 2: dplyr and Census\n\n\ntable functions and acs data.\n\n\n\n\n\nSep 4, 2026\n\n\n\n\n\n\n\nWeek 2: dplyr and Census\n\n\ntable functions and acs data.\n\n\n\n\n\nSep 4, 2026\n\n\n\n\n\n\n\nWeek 1: Getting Set Up\n\n\nFirst impressions, and getting the workflow running.\n\n\n\n\n\nAug 28, 2026\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "about.html",
@@ -151,7 +151,7 @@
     "href": "weekly-notes/week-02.html#reflection",
     "title": "Week 2: dplyr and Census",
     "section": "Reflection",
-    "text": "Reflection"
+    "text": "Reflection\n\nUnderstanding data sources reliability is important for identifying the limitations of an analysis and knowing how to address them, so we could get a better understanding of places to make a better decision. The ACS uses sampling methods to get estimation number. Therefore, it has a margin of error (MOE), which represents the range of uncertainty of an estimate. Understanding data reliability is important. If not, we may treat data from all counties as equally certain and apply policies without considering that data from smaller counties may be less representative of actual conditions."
   },
   {
     "objectID": "weekly-notes/week-02.html#questions-i-still-have",
