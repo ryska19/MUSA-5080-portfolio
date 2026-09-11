@@ -88,7 +88,7 @@
     "href": "assignments/index.html",
     "title": "Assignments",
     "section": "",
-    "text": "Completed assignments for MUSA 5080. New assignments appear here automatically once you add the .qmd file to this folder and render.\n\n\n\n\n\n\n\n\n\n\nNo matching items"
+    "text": "Completed assignments for MUSA 5080. New assignments appear here automatically once you add the .qmd file to this folder and render.\n\n\n\n\n\n\n\n\n\n\n\nAssignment 2: Who Do We Know the Least About?\n\n\n\n\n\n\n\n\nSep 10, 2026\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "index.html",
@@ -159,5 +159,68 @@
     "title": "Week 2: dplyr and Census",
     "section": "Questions I Still Have",
     "text": "Questions I Still Have"
+  },
+  {
+    "objectID": "assignments/assignment2 .html",
+    "href": "assignments/assignment2 .html",
+    "title": "Assignment 2: Who Do We Know the Least About?",
+    "section": "",
+    "text": "library(tidyverse)\nlibrary(tidycensus)"
+  },
+  {
+    "objectID": "assignments/assignment2 .html#setup",
+    "href": "assignments/assignment2 .html#setup",
+    "title": "Assignment 2: Who Do We Know the Least About?",
+    "section": "",
+    "text": "library(tidyverse)\nlibrary(tidycensus)"
+  },
+  {
+    "objectID": "assignments/assignment2 .html#the-question",
+    "href": "assignments/assignment2 .html#the-question",
+    "title": "Assignment 2: Who Do We Know the Least About?",
+    "section": "The question",
+    "text": "The question\nEvery number the American Community Survey publishes is an estimate drawn from a sample, not a count. That means every number comes with a margin of error — a statement about how wrong it might be.\nMost people ignore it. In this assignment, you won’t.\nIn this analysis, I look at median home value across counties in Illinois state, and ask which communities we measure most and least reliably."
+  },
+  {
+    "objectID": "assignments/assignment2 .html#choosing-what-to-measure",
+    "href": "assignments/assignment2 .html#choosing-what-to-measure",
+    "title": "Assignment 2: Who Do We Know the Least About?",
+    "section": "Choosing what to measure",
+    "text": "Choosing what to measure\n\nmy_state &lt;- \"IL\"        # two-letter abbreviation, in quotes\nmy_variable &lt;- \"B25077_001\"     # the variable code, in quotes"
+  },
+  {
+    "objectID": "assignments/assignment2 .html#pulling-the-data",
+    "href": "assignments/assignment2 .html#pulling-the-data",
+    "title": "Assignment 2: Who Do We Know the Least About?",
+    "section": "Pulling the data",
+    "text": "Pulling the data\n\ncounty_data &lt;- get_acs(\n  geography = \"county\",\n  variables = my_variable,\n  state = my_state,\n  year = 2023,\n  survey = \"acs5\"\n)\n\nLet’s look at what came back.\n\ndim(county_data)\n\n[1] 102   5\n\nhead(county_data)\n\n# A tibble: 6 × 5\n  GEOID NAME                       variable   estimate   moe\n  &lt;chr&gt; &lt;chr&gt;                      &lt;chr&gt;         &lt;dbl&gt; &lt;dbl&gt;\n1 17001 Adams County, Illinois     B25077_001   155900  4554\n2 17003 Alexander County, Illinois B25077_001    58700 10578\n3 17005 Bond County, Illinois      B25077_001   133100 13683\n4 17007 Boone County, Illinois     B25077_001   198600  8350\n5 17009 Brown County, Illinois     B25077_001   142200 19435\n6 17011 Bureau County, Illinois    B25077_001   121900  3733\n\n\nThere are 102 rows in the data that match the number of counties in the Illinois"
+  },
+  {
+    "objectID": "assignments/assignment2 .html#how-big-is-the-margin-of-error",
+    "href": "assignments/assignment2 .html#how-big-is-the-margin-of-error",
+    "title": "Assignment 2: Who Do We Know the Least About?",
+    "section": "How big is the margin of error?",
+    "text": "How big is the margin of error?\nA margin of error of 3,000 means something very different for an estimate of 20,000 than for an estimate of 200,000. To compare across places, we need it as a percentage.\n\ncounty_data &lt;- county_data %&gt;%\n  mutate(moe_pct = moe / estimate * 100)\n\nNow sort to see which counties are measured least reliably.\n\ncounty_data %&gt;%\n  arrange(desc(moe_pct)) %&gt;%\n  select(NAME, estimate, moe, moe_pct) %&gt;%\n  head(10)\n\n# A tibble: 10 × 4\n   NAME                       estimate   moe moe_pct\n   &lt;chr&gt;                         &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;\n 1 Hardin County, Illinois       91700 31269    34.1\n 2 Alexander County, Illinois    58700 10578    18.0\n 3 Jasper County, Illinois      122900 17070    13.9\n 4 Hamilton County, Illinois    108800 15103    13.9\n 5 Brown County, Illinois       142200 19435    13.7\n 6 Calhoun County, Illinois     174000 21433    12.3\n 7 Pulaski County, Illinois      81000  9539    11.8\n 8 Massac County, Illinois      118000 13228    11.2\n 9 Scott County, Illinois       101700 11145    11.0\n10 Bond County, Illinois        133100 13683    10.3\n\n\nIn this data, Hardin County has the largest margin of error relative to its estimate with 34.09%"
+  },
+  {
+    "objectID": "assignments/assignment2 .html#sorting-counties-into-reliability-categories",
+    "href": "assignments/assignment2 .html#sorting-counties-into-reliability-categories",
+    "title": "Assignment 2: Who Do We Know the Least About?",
+    "section": "Sorting counties into reliability categories",
+    "text": "Sorting counties into reliability categories\n\ncounty_data &lt;- county_data %&gt;%\n  mutate(reliability = case_when(\n    moe_pct &lt; 5  ~ \"High confidence\",\n    moe_pct &lt; 10 ~ \"Moderate\",\n    TRUE         ~ \"Low confidence\"\n  ))\n\ncount(county_data, reliability)\n\n# A tibble: 3 × 2\n  reliability         n\n  &lt;chr&gt;           &lt;int&gt;\n1 High confidence    49\n2 Low confidence     11\n3 Moderate           42\n\n\nThere are 49 counties with high confidence in reliability (moe percentage &lt; 5%), 42 counties with moderate confidance in reliablity (5% &lt; moe percentage &lt; 10%), and 11 counties with low confidence reliability (moe percentage &gt; 10%)"
+  },
+  {
+    "objectID": "assignments/assignment2 .html#is-the-margin-of-error-bigger-in-small-places",
+    "href": "assignments/assignment2 .html#is-the-margin-of-error-bigger-in-small-places",
+    "title": "Assignment 2: Who Do We Know the Least About?",
+    "section": "Is the margin of error bigger in small places?",
+    "text": "Is the margin of error bigger in small places?\nTo answer this we need population and our variable side by side, in the same row. That means a wide pull.\n\ncounty_wide &lt;- get_acs(\n  geography = \"county\",\n  variables = c(myvar = my_variable,\n                pop   = \"B01003_001\"),\n  state = my_state,\n  year = 2023,\n  survey = \"acs5\",\n  output = \"wide\"\n)\n\nhead(county_wide)\n\n# A tibble: 6 × 6\n  GEOID NAME                       myvarE myvarM  popE  popM\n  &lt;chr&gt; &lt;chr&gt;                       &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;\n1 17001 Adams County, Illinois     155900   4554 65166    NA\n2 17003 Alexander County, Illinois  58700  10578  5042    NA\n3 17005 Bond County, Illinois      133100  13683 16627    NA\n4 17007 Boone County, Illinois     198600   8350 53316    NA\n5 17009 Brown County, Illinois     142200  19435  6320    NA\n6 17011 Bureau County, Illinois    121900   3733 33027    NA\n\n\n\ncounty_wide &lt;- county_wide %&gt;%\n  mutate(moe_pct = myvarM / myvarE * 100) %&gt;%\n  mutate(reliability = case_when(\n    moe_pct &lt; 5  ~ \"High confidence\",\n    moe_pct &lt; 15 ~ \"Moderate\",\n    TRUE         ~ \"Low confidence\"\n  ))\n\nNow compare the average population of counties in each reliability category.\n\ncounty_wide %&gt;%\n  group_by(reliability) %&gt;%\n  summarize(\n    n_counties = n(),\n    avg_population = mean(popE)\n  )\n\n# A tibble: 3 × 3\n  reliability     n_counties avg_population\n  &lt;chr&gt;                &lt;int&gt;          &lt;dbl&gt;\n1 High confidence         49        240766.\n2 Low confidence           2          4332.\n3 Moderate                51         17381.\n\n\nAverage population in high confidence counties is the largest (240,766 people) compared to the other groups. On the other hand, the low confidence counties have the smallest average population with 4,332 people. Small counties tend to have low confidence reliability, while large counties tend to have high confidence reliability"
+  },
+  {
+    "objectID": "assignments/assignment2 .html#what-this-means-for-policy",
+    "href": "assignments/assignment2 .html#what-this-means-for-policy",
+    "title": "Assignment 2: Who Do We Know the Least About?",
+    "section": "What this means for policy",
+    "text": "What this means for policy\nCensus data is commonly used by policymakers as a source to develop programs. However, not all policies are perfectly suited to every area. There are many reasons for this. From an analytical perspective, understanding data sources reliability is important for identifying the limitations of an analysis and knowing how to address them, so we could get a better understanding of places to make a better decision. The ACS uses sampling methods to get estimation number. Therefore, it has a margin of error (MOE), which represents the range of uncertainty of an estimate.\nLooking at median home value data from the ACS 5-year estimates for Illinois, the MOE percentage varies from 0.6% to 34.1%. With the largest MOE percentage (34.1%), Hardin County is the area about which we have the least certainty. There is a pattern in which low confidence reliability counties has the least average population, when high confidence reliability counties has the highest. Because the ACS uses sampling methods, smaller places yield smaller samples, which tend to result in lower reliability.\nUnderstanding data reliability is important. If not, we may treat data from all counties as equally certain and apply policies without considering that data from smaller counties may be less representative of actual conditions. In this case, relying solely on median home value data in Illinois without considering its reliability could lead to housing assistance program application that are not well suited to Hardin County or other lower confidence counties, and smaller communities may continue to be disadvantaged."
   }
 ]
