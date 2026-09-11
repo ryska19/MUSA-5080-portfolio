@@ -144,7 +144,7 @@
     "href": "weekly-notes/week-02.html#key-concepts",
     "title": "Week 2: dplyr and Census",
     "section": "Key Concepts",
-    "text": "Key Concepts\nThe loop: Edit → Save → Render → Commit → Push → wait → refresh"
+    "text": "Key Concepts\nCensus\nDecennial Census → 10 years, 10 questions, get data from everyone American Community Survey (ACS) → use sample, 3% of HH surveyed, estimate for the population, now there are 1-year and 5-year estimate\nData Reliability\nMargin of Error (MOE) → represents the range of uncertainty of an estimate\nImportant R codes\nfilter() → pick rows\nselect() → pick column\nmutate() → add a new computed column\narrange() → change order of rows, asc or desc\ngroup_by() → group rows by something/variable\nsummarize() → summarize data\nThe loop: Edit → Save → Render → Commit → Push → wait → refresh"
   },
   {
     "objectID": "weekly-notes/week-02.html#reflection",
@@ -222,5 +222,40 @@
     "title": "Assignment 2: Who Do We Know the Least About?",
     "section": "What this means for policy",
     "text": "What this means for policy\nCensus data is commonly used by policymakers as a source to develop programs. However, not all policies are perfectly suited to every area. There are many reasons for this. From an analytical perspective, understanding data sources reliability is important for identifying the limitations of an analysis and knowing how to address them, so we could get a better understanding of places to make a better decision. The ACS uses sampling methods to get estimation number. Therefore, it has a margin of error (MOE), which represents the range of uncertainty of an estimate.\nLooking at median home value data from the ACS 5-year estimates for Illinois, the MOE percentage varies from 0.6% to 34.1%. With the largest MOE percentage (34.1%), Hardin County is the area about which we have the least certainty. There is a pattern in which low confidence reliability counties has the least average population, when high confidence reliability counties has the highest. Because the ACS uses sampling methods, smaller places yield smaller samples, which tend to result in lower reliability.\nUnderstanding data reliability is important. If not, we may treat data from all counties as equally certain and apply policies without considering that data from smaller counties may be less representative of actual conditions. In this case, relying solely on median home value data in Illinois without considering its reliability could lead to housing assistance program application that are not well suited to Hardin County or other lower confidence counties, and smaller communities may continue to be disadvantaged."
+  },
+  {
+    "objectID": "weekly-notes/week-03.html",
+    "href": "weekly-notes/week-03.html",
+    "title": "Week 2: dplyr and Census",
+    "section": "",
+    "text": "First we had our questions answered. And then we had a quiz"
+  },
+  {
+    "objectID": "weekly-notes/week-03.html#what-we-did",
+    "href": "weekly-notes/week-03.html#what-we-did",
+    "title": "Week 2: dplyr and Census",
+    "section": "",
+    "text": "First we had our questions answered. And then we had a quiz"
+  },
+  {
+    "objectID": "weekly-notes/week-03.html#key-concepts",
+    "href": "weekly-notes/week-03.html#key-concepts",
+    "title": "Week 2: dplyr and Census",
+    "section": "Key Concepts",
+    "text": "Key Concepts\nThe loop: Edit → Save → Render → Commit → Push → wait → refresh"
+  },
+  {
+    "objectID": "weekly-notes/week-03.html#reflection",
+    "href": "weekly-notes/week-03.html#reflection",
+    "title": "Week 2: dplyr and Census",
+    "section": "Reflection",
+    "text": "Reflection"
+  },
+  {
+    "objectID": "weekly-notes/week-03.html#questions-i-still-have",
+    "href": "weekly-notes/week-03.html#questions-i-still-have",
+    "title": "Week 2: dplyr and Census",
+    "section": "Questions I Still Have",
+    "text": "Questions I Still Have"
   }
 ]

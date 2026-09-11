@@ -12,9 +12,31 @@ First we had our questions answered. And then we had a quiz
 
 ## Key Concepts
 
+**Census**
+
+Decennial Census  → 10 years, 10 questions, get data from everyone
+American Community Survey (ACS)  → use sample, 3% of HH surveyed, estimate for the population, now there are 1-year and 5-year estimate
+
+**Data Reliability**
+
+Margin of Error (MOE)  → represents the range of uncertainty of an estimate 
+
+**Important R codes**
+
+filter()   → pick rows
+
+select()  → pick column
+
+mutate()  → add a new computed column
+
+arrange()  → change order of rows, asc or desc
+
+group_by()  → group rows by something/variable
+
+summarize()  → summarize data
+
 
 The loop: **Edit → Save → Render → Commit → Push → wait → refresh**
-
 
 
 ## Reflection
