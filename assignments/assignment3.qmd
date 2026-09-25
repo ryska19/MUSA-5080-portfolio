@@ -1,0 +1,236 @@
+---
+title: "Assignment 3: Verify the Claim"
+subtitle: "Change of Poverty Rate in Philadelphia 2006–2010 vs 2013–2017"
+author: "RYSKA"
+date: 2026-09-24
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-summary: "Show code"
+    embed-resources: true
+---
+
+## Part 1 : Reconstruct
+
+Lubrano, Alfred's article compares the 2006-2010 and 2013-2017 ACS 5-year estimates and claims that several neighbourhoods experienced a noticeable increase in poverty rate. To verify the claim, I use the same ACS data and time period at the census tract level, as a proxy for the neighbourhood (since neighbourhood is not a formal census geography), so my numbers will not match its figures. The poverty rate is the number of people below the poverty level divided by the total population; therefore, I pull table B07012_002, which represents the population below 100 percent of the poverty level, and B07012_001, which represents the total population.
+
+Because the 2006-2010 and 2013-2017 time periods do not overlap, the two estimates come from independent samples, so the standard error of the difference is the square root of the sum of the squared standard errors. If the periods did overlap, some of the data in the second period would be redundant with the first, which would not completely capture the change over time.
+
+```{r}
+#| include: false
+library(tidycensus)
+library(tidyverse)
+library(gt)
+```
+
+------------------------------------------------------------------------
+
+## Part 2 — Test
+
+```{r}
+#| include: false
+#| message: false
+#| warning: false
+poverty_share2017 <- get_acs(
+  geography = "tract",
+  variables = c(below_poverty = "B07012_002",
+                total         = "B07012_001"),
+  state     = "PA",
+  county    = "Philadelphia",
+  year      = 2017,
+  survey    = "acs5",
+  output    = "wide"
+) %>%
+  mutate(
+    share     = below_povertyE / totalE,
+    share_moe = moe_prop(below_povertyE, totalE,
+                         below_povertyM, totalM),
+    period    = "2013-2017",
+    cv = (share_moe / 1.645) / share * 100,
+    dot = case_when(
+      cv < 12  ~ "🟢",
+      cv <= 40 ~ "🟡",
+      cv > 40 ~ "🔴"
+    ),
+    flag = case_when(
+      cv < 12  ~ "Reliable",
+      cv <= 40 ~ "Somewhat reliable",
+      cv > 40 ~ "Unreliable"
+    ),
+    NAME = str_remove(NAME, ", Philadelphia County, Pennsylvania")
+  )%>%
+  arrange(desc(cv))
+
+poverty_share2017 %>%
+  count(flag)
+
+poverty_share2010 <- get_acs(
+  geography = "tract",
+  variables = c(below_poverty = "B07012_002",
+                total         = "B07012_001"),
+  state     = "PA",
+  county    = "Philadelphia",
+  year      = 2010,
+  survey    = "acs5",
+  output    = "wide"
+) %>%
+  mutate(
+    share     = below_povertyE / totalE,
+    share_moe = moe_prop(below_povertyE, totalE,
+                         below_povertyM, totalM),
+    period    = "2006-2010",
+    cv = (share_moe / 1.645) / share * 100,
+    dot = case_when(
+      cv < 12  ~ "🟢",
+      cv <= 40 ~ "🟡",
+      cv > 40 ~ "🔴"
+    ),
+    flag = case_when(
+      cv < 12  ~ "Reliable",
+      cv <= 40 ~ "Somewhat reliable",
+      cv > 40 ~ "Unreliable"
+    ),
+    NAME = str_remove(NAME, ", Philadelphia County, Pennsylvania")
+  )%>%
+  arrange(desc(cv))
+
+poverty_share2010 %>%
+  count(flag)
+```
+
+**Rates, MOEs, and reliability**
+
+I calculate data reliability using the Jurjevich et al. (2018) thresholds: CV < 12% reliable, 12–40% somewhat reliable, > 40% unreliable. As a result, in the 2013-2017 data there are 8 reliable, 335 somewhat reliable, and 21 unreliable census tracts. There are 8 census tracts that present as NA; those census tracts have no population because they are airports, stadiums, or industrial areas. I will remove them so they cannot be calculated in future analysis.The figures below show reliability and the largest MOE for poverty rate in 2013-2017.
+
+```{r}
+#| echo: false
+poverty_share2017 %>%
+  select(dot, NAME, totalE, share, share_moe, cv, flag)%>%
+  mutate(NAME = str_remove(NAME, "Census Tract ")) %>%
+  gt() %>%
+  fmt_number(columns = c(share, share_moe), decimals = 2) %>%
+  fmt_number(columns = cv, decimals = 1) %>%
+  cols_label(
+    dot      = "",
+    NAME     = "Census Tract",
+    totalE = "Population",
+    share = "Poverty Rate",
+    share_moe      = "MOE",
+    cv       = "CV (%)",
+    flag     = "Reliability"
+  ) %>%
+  cols_align(align = "center", columns = dot) %>%
+  tab_header(
+    title    = "Poverty Rate in Philadelphia",
+    subtitle = "ACS 5-year estimates 2013-2017"
+  ) %>%
+  tab_source_note(
+    "Reliability thresholds follow Jurjevich et al. (2018): CV < 12% reliable, 12–40% somewhat reliable, > 40% unreliable."
+  )
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+pov_share2017_clean <- poverty_share2017 %>%
+  filter(totalE > 0, !is.na(share), !is.na(share_moe))
+pov_share2017_clean %>%
+  arrange(desc(share_moe)) %>%
+  mutate(NAME = str_remove(NAME, "Census Tract ")) %>%
+  slice_head(n = 15) %>%
+  ggplot(aes(x = reorder(NAME, share), y = share)) +
+  geom_col(fill = "maroon") +
+  geom_errorbar(aes(ymin = share - share_moe, ymax = share + share_moe), width = 0.3) +
+  coord_flip() +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "Census tract with the largest margins of error",
+    subtitle = "Poverty Rate in Philadelphia County, ACS 2017 5-year estimates",
+    x = "Census Tract",
+    y = "% Population below poverty level"
+  )
+```
+
+I also calculate reliability for the poverty rate in the 2006–2010 data. As a result, there are 10 reliable, 324 somewhat reliable, and 43 unreliable census tracts. There are 7 census tracts that present as NA.
+
+**Change between periods**
+
+Calculating the change in poverty rate between 2006-2010 and 2013-2017, 63 tracts show a statistically detectable change at 90% confidence, 313 tracts do not. There is 1 N/A tract, this tract is stadium that has no population in 2013-2017 but it had population in 2006-2010. 
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+pov_share2010_clean <- poverty_share2010 %>%
+  filter(totalE > 0, !is.na(share), !is.na(share_moe))
+
+pctpoverty_change <- bind_rows(
+  pov_share2010_clean,
+  pov_share2017_clean
+)
+
+pctpoverty_wide <- pctpoverty_change %>%
+  select(GEOID, NAME, period, share, share_moe, cv, dot, flag) %>%
+  pivot_wider(
+    names_from  = period,
+    values_from = c(share, share_moe, cv, dot, flag)
+  )
+
+
+pctpoverty_tested <- pctpoverty_wide %>%
+  mutate(
+    change   = `share_2013-2017` - `share_2006-2010`,
+    se_1     = `share_moe_2013-2017` / 1.645,
+    se_2     = `share_moe_2006-2010` / 1.645,
+    se_diff  = sqrt(se_1^2 + se_2^2),
+    moe_diff = se_diff * 1.645,
+    z        = change / se_diff,
+    significant = abs(z) > 1.645
+  )
+
+pctpoverty_tested %>%
+  count(significant)
+```
+
+The figure bellow shows statistically significant change in poverty rate.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+pctpoverty_tested %>%
+  filter(significant,
+         !is.na(change)) %>%
+  mutate(NAME = str_remove(NAME, "Census Tract ")) %>%
+  ggplot(aes(x = reorder(NAME, change), y = change)) +
+  geom_col(aes(fill = change > 0)) +
+  geom_errorbar(aes(ymin = change - moe_diff,
+                    ymax = change + moe_diff), width = 0.3) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Statistically significant change in poverty rate",
+       subtitle = "2006–2010 vs 2013–2017, ACS 5-year estimates",
+       x = NULL, y = "Change in Poverty Rate in Philadelphia")
+```
+
+------------------------------------------------------------------------
+
+## Part 3 — Adjudicate
+
+The general idea that some places in Philadelphia are experiencing an increase in poverty while others are decreasing is **supported by the data**. Of the 63 statistically significant change tracts, meaning tracts that show a change big enough and clear enough to trust and not just something that could be random noise in the survey, 36 tracts show an increase and 27 show a decrease in poverty rate.
+
+The map showing more areas in Philadelphia with increasing poverty rates **could not supported** by the data without telling about its reliability. There are only 63 statistically significant change tracts and 313 tracts show no change we can be sure is real rather than just noise, which risks leading readers to think more parts of Philadelphia are getting poorer than they actually are. This could affect decisions about where to live or invest because people might avoid or worry about neighborhoods that are actually stable, just because the article made it sound like poverty was spreading everywhere.
+
+The neighborhood claims **cannot be determined**, because the article never explains which Census tracts were combined together to create the neighborhood boundaries.
+
+------------------------------------------------------------------------
+
+## Part 4 — Rewrite
+
+Comparing Census data from 2006–2010 to 2013–2017, poverty went up in some parts of Philadelphia and down in others. Out of all census tracts examined, just 63 had a shift large enough, in which 36 areas got poorer, while 27 decrease in poverty rate. The other 313 tracts showed no change significant enough to say anything really changed, because it could just be noise in how the data was collected. It's also worth noting that in 2013-2017 data, 8 tracts across the city have essentially no residential population which are places like airports and industrial land. However, beyond paying attention to the 36 tracts with significantly increased poverty rates, interventions should follow further investigation, taking data reliability into account across the wider set of tracts as well.
+
+------------------------------------------------------------------------

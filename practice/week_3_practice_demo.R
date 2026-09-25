@@ -3,8 +3,8 @@ library(tidycensus)
 
 county_data <- get_acs(
   geography = "county",
-  variables = my_variable,
-  state = my_state,
+  variables = "B17001_002",
+  state = "NY",
   year = 2023,
   survey = "acs5"
 )
@@ -22,10 +22,12 @@ county_data <- county_data %>%
 ggplot(county_data)+
   aes(x=estimate, y = moe_pct, color = "blue")+
   geom_point()
+#the dots still colored red but it has a legend that says red dot = blue
 
 ggplot(county_data)+
   aes(x=estimate, y = moe_pct)+
   geom_point(color = "blue")
+#blue dots. Put the color in the geom_point
 
 # error bar charts. let's build
 county_data %>%
@@ -61,7 +63,7 @@ county_data %>%
   geom_errorbar(aes(ymin = estimate - moe, ymax = estimate + moe)) +
   coord_flip()
 
-## Remove "County, New York"
+## Remove "County, Pennsylvania"
 
 county_data %>%
   arrange(desc(moe_pct)) %>%
@@ -115,7 +117,7 @@ county_data %>%
 
 ## Derived Uncertainty
 
-# you want the total number of people below poverty across several couties. You need the MOE for that combined number. you don't just add the MOEs together!
+# you want the total number of people below poverty across several counties. You need the MOE for that combined number. you don't just add the MOEs together!
 
 region <- county_data %>%
   filter(NAME %in% c("Hamilton County, New York",

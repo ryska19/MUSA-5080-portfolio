@@ -1,0 +1,54 @@
+---
+title: "Week 3: Reliability and Visualization"
+description: "..."
+date: 2026-09-11
+---
+
+## What We Did
+
+<!-- CHANGE THIS: replace with your own notes -->
+
+We had a quiz as usual, and learn about data visualization, MOE, CV, and SE
+
+## Key Concepts
+
+**Plot**
+
+is a mapping from columns in your data to visual properties on your page. 
+"gg" -> "grammar of graphics"
+
+
+**R Functions**
+
+ggplot()   → create a blank canvas
+
+aes()  → aesthetic mapping (but you could not change the dots/col color. It will read the color as a data variable )
+
+mutate()  → add a new computed column
+
+geom_**()  → the shape/type of chart
+
+geom_histogram() → how a variable is spread
+
+geom_point() → how do two variable relate
+
+geom_boxplot() and geom_col() → how do group compare?
+
+geom_line() → how do things change over time
+
+geom_error() → how uncertain is a value
+
+
+
+
+
+## Reflection
+
+<!-- CHANGE THIS: 3-4 sentences -->
+
+Understanding data sources reliability is important for identifying the limitations of an analysis and knowing how to address them, so we could get a better understanding of places to make a better decision. The ACS uses sampling methods to get estimation number. Therefore, it has a margin of error (MOE), which represents the range of uncertainty of an estimate. Understanding data reliability is important. If not, we may treat data from all counties as equally certain and apply policies without considering that data from smaller counties may be less representative of actual conditions.
+
+## Questions I Still Have
+
+-
+
