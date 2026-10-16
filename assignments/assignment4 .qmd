@@ -1,0 +1,530 @@
+---
+title: "Assignment 4 : Building Features, Watching What Happens"
+subtitle: "MUSA 5080 · Integrates Weeks 1–5 "
+author: "RYSKA"
+date: 2026-10-16
+format:
+  html:
+    toc: true
+    code-fold: show
+    code-tools: true
+    embed-resources: true
+execute:
+  warning: false
+  message: false
+freeze: false
+---
+
+
+## Part 0: Setup
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(tidycensus)
+library(sf)
+library(caret)
+
+Sys.getenv("CENSUS_API_KEY") != ""   
+```
+
+### The cross-validation helper
+
+
+```{r}
+#| label: cv-helper
+ctrl <- trainControl(method = "cv", number = 10)
+
+cv_rmse <- function(formula, data) {
+  df <- if (inherits(data, "sf")) st_drop_geometry(data) else data
+  vars <- all.vars(formula)
+  bad <- vars[sapply(vars, function(v) any(is.na(df[[v]])))]
+  if (length(bad) > 0) {
+    stop("These variables have NAs: ", paste(bad, collapse = ", "),
+         ". Fill them or choose another variable (Rule 1: don't drop rows).")
+  }
+  set.seed(5080)
+  fit <- train(formula, data = df, method = "lm", trControl = ctrl)
+  fit$results$RMSE
+}
+```
+
+### The model log
+
+
+```{r}
+#| label: log-start
+model_log <- tibble(
+  model   = character(),
+  added   = character(),
+  cv_rmse = numeric(),
+  notes   = character()
+)
+```
+
+---
+
+## Part 1: Outcome -> % of people below poverty
+
+Understanding poverty in Philadelphia areas and how some variable related to it will help policymakers allocate resources, develop targeted programs, and create policies to improve quality of life.
+
+### 1A: Pulling outcome and baseline predictors
+
+**Baseline predictors**
+
+Educational attainment less than highschool
+
+Number of household that have 4 or more people
+
+Median age
+
+
+```{r}
+#| label: pull
+philly_tracts <- get_acs(
+  geography = "tract",
+  state = "PA",
+  county = "Philadelphia",
+  variables = c(
+    total_pop = "B01003_001",
+    below_pov = "B07012_002",
+    less_highschool = "B23006_002",
+    hhsize_4andmore = "B08201_025",
+    median_age = "B06002_001"
+  ),
+  year = 2023,
+  output = "wide",
+  progress = FALSE,
+  geometry = TRUE
+) %>%
+  st_transform(2272)
+```
+
+```{r}
+#| label: build-outcome
+philly_tracts <- philly_tracts %>%
+  mutate(
+    # build your outcome, e.g. a percentage:
+    y = below_povE / total_popE * 100,
+    # and its reliability. For a percentage, use tidycensus::moe_prop();
+    # for a median or count, use the E and M columns directly.
+    y_moe = moe_prop(below_povE, total_popE,
+                         below_povM, total_popM),
+    y_cv  = (y_moe / 1.645) / y * 100,
+    # your predictors:
+    less_hschool = less_highschoolE,
+    hhsize_4more = hhsize_4andmoreE,
+    med_age = median_ageE
+  )
+```
+
+### 1B: Checking reliability
+
+
+```{r}
+#| label: reliability
+# How many tracts have no value for your outcome?
+sum(is.na(philly_tracts$y))
+
+# How reliable is it?
+summary(philly_tracts$y_cv)
+
+philly_tracts %>%
+  mutate(reliability = case_when(
+    y_cv < 12  ~ "High",
+    y_cv <= 40 ~ "Moderate",
+    TRUE       ~ "Low"
+  )) %>%
+  st_drop_geometry() %>%
+  count(reliability)
+
+# What does the distribution look like?
+ggplot(philly_tracts, aes(x = y)) +
+  geom_histogram(bins = 30) +
+  theme_minimal()
+```
+
+For % of people below poverty outcome, 388 tracts (95%) is in high reliability and 20 tracts is low.
+
+
+### 1C: Decide which tracts to model
+
+
+```{r}
+#| label: filter
+tracts <- philly_tracts %>%
+  filter(total_popE > 0,
+         !is.na(y)
+         # add !is.na() for each baseline predictor like in the in-class lab
+         )
+
+nrow(philly_tracts)
+nrow(tracts)
+```
+
+There are 17 census tract that have no population, those census tracts are airports, parks, stadiums, industrial, or special use areas
+
+---
+
+## Part 2: Baseline model
+
+### 2A: Look first
+
+Plot your outcome against each predictor before modeling.
+
+```{r}
+#| label: look
+# one scatterplot per predictor, e.g.:
+ggplot(tracts, aes(x = less_hschool, y = y)) + geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) + theme_minimal()
+```
+
+### 2B: Fit and log
+
+```{r}
+#| label: m1
+f1 <- y ~ less_hschool + hhsize_4more + med_age
+
+m1 <- lm(f1, data = tracts)
+summary(m1)
+
+model_log <- model_log %>%
+  add_row(model = "m1", added = "ACS baseline",
+          cv_rmse = cv_rmse(f1, tracts),
+          notes = "Baseline with ACS Variables")
+
+model_log
+```
+
+On tracts it hasn't seen, the baseline model misses by about 11.35
+
+### 2C: Where is the baseline wrong?
+
+
+```{r}
+#| label: resid-map-1
+tracts <- tracts %>% mutate(resid_m1 = residuals(m1))
+
+map_baseline <- ggplot(tracts) +
+  geom_sf(aes(fill = resid_m1), color = NA) +
+  scale_fill_gradient2(low = "#2166ac", mid = "grey95", high = "#b2182b", midpoint = 0, limits = c(-35, 45)) +
+  theme_void() +
+  labs(title = "Baseline model: where it's wrong",
+       subtitle = "Red = actual higher than predicted",
+       fill = "Residual")
+
+map_baseline
+
+```
+
+
+The residuals cluster mainly in Center City and northern area of Center City, parts of West and Southwest Philadelphia. Center City, North Philly, university city are mostly dense, and have good transit facilities. Where northern, west, and south area associated with crime rate.
+
+---
+
+## Part 3: Getting data from Philadelphia's open data portal
+
+
+```{r}
+#| label: carto-helper
+carto_get <- function(sql) {
+  url <- paste0("https://phl.carto.com/api/v2/sql?format=GeoJSON&q=", URLencode(sql))
+  st_read(url, quiet = TRUE)
+}
+```
+
+### Finding a table name
+
+On a dataset's OpenDataPhilly page, look for the API link. The table name is the word after `FROM` in the example query. To see what values a column takes before you filter on it, ask for a count in CSV format:
+
+```{r}
+#| label: explore-values
+# What kinds of crime are in the incidents table in 2023?
+url <- paste0("https://phl.carto.com/api/v2/sql?format=csv&q=",
+              URLencode("SELECT text_general_code, COUNT(*) AS n
+                         FROM incidents_part1_part2
+                         WHERE dispatch_date >= '2023-01-01' AND dispatch_date < '2024-01-01'
+                         GROUP BY text_general_code ORDER BY n DESC"))
+read_csv(url)
+```
+
+Based on the gaps identified from part 2C, thefts and bus stops layer will be added.
+
+
+
+```{r}
+#| label: my-layers
+thefts <- carto_get(
+  "SELECT the_geom, text_general_code, dispatch_date
+   FROM incidents_part1_part2
+   WHERE dispatch_date >= '2023-01-01' AND dispatch_date < '2024-01-01'
+  AND text_general_code = 'Thefts'"
+) %>%
+  st_transform(st_crs(tracts))
+nrow(thefts)
+
+thefts_clean <- filter(thefts, !st_is_empty(thefts))
+nrow(thefts_clean)
+
+busstop <- st_read(
+  "https://hub.arcgis.com/api/v3/datasets/4face8b41aa145d4b3899528e0f8488b_0/downloads/data?format=geojson&spatialRefId=4326&where=1%3D1") %>%
+  st_transform(st_crs(tracts))
+nrow(busstop)
+
+busstop_clean <- filter(busstop, !st_is_empty(busstop))
+nrow(busstop_clean)
+```
+
+
+**Thefts** and **bus stops** connect to poverty because they reflect area conditions that tend to go along with it. Areas with concentrated disadvantage often have more property crime, and lower-income households rely more on buses, so transit coverage is denser where they live.
+
+There era 1587 (4%) thefts data that have no location and will be dropped for this assessment.
+
+
+---
+
+## Part 4: Building spatial features
+
+### 4A: Bus Stops, number and density
+
+
+```{r}
+#| label: busstop
+tracts <- tracts %>%
+  mutate(
+    n_busstop = lengths(st_intersects(., busstop)),
+    area_sqmi  = as.numeric(st_area(.)) / 27878400,   # sq ft in a sq mile
+    busstop_per_sqmi = n_busstop / area_sqmi)
+
+summary(tracts$n_busstop)
+
+f2 <- y ~ less_hschool + hhsize_4more + med_age + n_busstop
+
+model_log <- model_log %>%
+  add_row(model = "m2", added = "# Bus Stops",
+          cv_rmse = cv_rmse(f2, tracts),
+          notes = "Number of Bus Stops")
+model_log
+
+f3 <- y ~ less_hschool + hhsize_4more + med_age + busstop_per_sqmi
+
+model_log <- model_log %>%
+  add_row(model = "m3", added = "Bus Stop Density",
+          cv_rmse = cv_rmse(f3, tracts),
+          notes = "Bus stop per sqmi")
+model_log
+
+```
+
+### 4B: Thefts, number and density
+
+
+```{r}
+#| label: thefts
+
+tracts <- tracts %>%
+  mutate(n_thefts = lengths(st_intersects(., thefts_clean)))
+
+summary(tracts$n_thefts)
+tracts <- tracts %>%
+  mutate(
+    area_sqmi         = as.numeric(st_area(.)) / 27878400,   # sq ft in a sq mile
+    thefts_per_sqmi = n_thefts / area_sqmi,
+    thefts_per_1k   = n_thefts / total_popE * 1000,
+  )
+
+f4 <- y ~ less_hschool + hhsize_4more + med_age + n_thefts
+
+model_log <- model_log %>%
+  add_row(model = "m4", added = "# Thefts",
+          cv_rmse = cv_rmse(f4, tracts),
+          notes = "Number of thefts")
+model_log
+
+f5 <- y ~ less_hschool + hhsize_4more + med_age + thefts_per_1k
+
+model_log <- model_log %>%
+  add_row(model = "m5", added = "Thefts Density",
+          cv_rmse = cv_rmse(f5, tracts),
+          notes = "Thefts per 1000 Population")
+model_log
+```
+
+
+### 4C: Measuring distance to City Hall
+
+Distance to City Hall shows how close a tract is to the city center, and this relates to poverty because location affects housing costs, access to jobs, and how an area developed over time.
+
+```{r}
+#| label: city-hall
+city_hall <- st_sfc(st_point(c(-75.1636, 39.9526)), crs = 4326) %>%
+  st_transform(st_crs(tracts))
+
+tract_pts <- st_point_on_surface(tracts)   # always inside the tract, unlike a centroid
+
+tracts <- tracts %>%
+  mutate(dist_ch_mi = as.numeric(st_distance(tract_pts, city_hall)) / 5280)
+
+f6 <- y ~ less_hschool + hhsize_4more + med_age + dist_ch_mi
+
+model_log <- model_log %>%
+  add_row(model = "m6", added = "Distance to City Hall",
+          cv_rmse = cv_rmse(f6, tracts),
+          notes = "Distance to City Hall")
+
+# repeat for each feature
+model_log
+```
+
+
+Distance to City Hall helped the most. It lowered the cross-validated RMSE about 0.13. number of bus stops (11.334) and thefts density (11.336) each improved it by only about 0.015, which is a very small change. On the other hand, bus stop density and number of theft worsen the model.
+
+Adding thefts and bus stops only slightly improve the model, it might be because of thefts and bus stops also affected by the area characteristic that serves as destination so they do not completely reflect the residents, for example busy areas like Center City can have many thefts and stops because it is destination area.
+
+---
+
+## Part 5: Transforming features
+
+**log thefts density**
+
+```{r}
+#| label: my-transforms-theft
+
+#log
+
+ggplot(tracts, aes(x = thefts_per_1k)) + geom_histogram(bins = 30) + theme_minimal()
+ggplot(tracts, aes(x = log1p(thefts_per_1k))) + geom_histogram(bins = 30) + theme_minimal()
+
+f_log <- y ~ less_hschool + hhsize_4more + med_age + log1p(thefts_per_1k)
+
+model_log <- model_log %>%
+  add_row(model = "m7", added = "log of thefts density",
+          cv_rmse = cv_rmse(f_log, tracts),
+          notes = "log of thefts per 1k population")
+model_log
+
+```
+
+**squared term of distance to city hall**
+
+```{r}
+#| label: my-transforms-sqdistance
+# squared term
+m_sq <- lm(y ~ dist_ch_mi + I(dist_ch_mi^2), data = tracts)
+summary(m_sq)
+
+
+ggplot(tracts, aes(x = dist_ch_mi, y = y)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", formula = y ~ x + I(x^2), se = FALSE, color = "red") +
+  theme_minimal()
+
+f_sq <- y ~ less_hschool + hhsize_4more + med_age + dist_ch_mi + I(dist_ch_mi^2)
+
+model_log <- model_log %>%
+  add_row(model = "m8", added = "squared distance to city hall",
+          cv_rmse = cv_rmse(f_sq, tracts),
+          notes = "squared distance to city hall")
+model_log
+```
+
+**categorical distance to city hall**
+
+```{r}
+#| label: my-transforms-catdistance
+# categorical
+
+tracts <- tracts %>%
+  mutate(
+    ring = case_when(
+      dist_ch_mi < 2 ~ "Core",
+      dist_ch_mi < 5 ~ "Inner",
+      TRUE           ~ "Outer"
+    ),
+    ring = factor(ring, levels = c("Core", "Inner", "Outer"))
+  )
+
+tracts %>% st_drop_geometry() %>% count(ring)
+
+m_cat <- lm(y ~ less_hschool + hhsize_4more + med_age + ring, data = tracts)
+summary(m_cat)
+
+f_cat <- y ~ less_hschool + hhsize_4more + med_age + ring
+
+model_log <- model_log %>%
+  add_row(model = "m9", added = "categorical distance to city hall",
+          cv_rmse = cv_rmse(f_cat, tracts),
+          notes = "categorical distance to city hall")
+model_log
+
+```
+The categorical distance to City Hall (m9) helped most, lowering the cross-validated RMSE from 11.35 (ACS baseline) to 10.86. The squared distance (m8, 11.10) was second, and the log of thefts density (m7, 11.35) did not help at all.
+
+In categorical distance to city hall, core is the reference level. Holding the ACS baseline variable constant, tracts in the inner ring (2 to 5 miles from City Hall) have a predicted poverty rate about 8.7 percentage points higher than tracts in the core (within 2 miles), and uuter tracts are about 1.8 points higher than core tracts.
+
+
+---
+
+## Part 6: Final model
+
+```{r}
+#| label: final
+f_final <- y ~ less_hschool + hhsize_4more + med_age + ring + thefts_per_1k + n_busstop
+
+m_final <- lm(f_final, data = tracts)
+summary(m_final)
+
+model_log <- model_log %>%
+  add_row(model = "final", added = "ACS baseline plus added variables",
+          cv_rmse = cv_rmse(f_final, tracts),
+          notes = "ACS baseline plus the lowest rmse for each added categorical form")
+
+model_log
+```
+
+### Where is the final model wrong?
+
+```{r}
+#| label: resid-map-2
+tracts <- tracts %>% mutate(resid_final = residuals(m_final))
+
+map_final <- ggplot(tracts) +
+  geom_sf(aes(fill = resid_final), color = NA) +
+  scale_fill_gradient2(low = "#2166ac", mid = "grey95", high = "#b2182b", midpoint = 0, limits = c(-35, 45)) +
+  theme_void() +
+  labs(title = "Final model: where it's wrong",
+       subtitle = "Red = actual higher than predicted",
+       fill = "Residual")
+
+library(patchwork)
+map_baseline + map_final
+
+```
+
+
+
+
+### Are the biggest misses in the least reliable tracts?
+
+```{r}
+#| label: fog
+ggplot(tracts, aes(x = y_cv, y = abs(resid_final))) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(se = FALSE) +
+  labs(x = "CV of your outcome estimate (%)", y = "Size of the miss") +
+  theme_minimal()
+```
+
+---
+
+## Part 7: Reflection
+
+The feature that helped the most is the distance rings (core, inner, outer). They lowering the CV RMSE from 11.35 for the baseline to 10.86. Poverty is highest in the inner ring and lower in the core and outer areas, and rings capture better than the original variable distance to city hall. The feature that disappointed me most was theft density. Taking its log left the error at 11.35, the same as the baseline. Theft is high in Center City might be because of shoppers and tourists, not because residents are poor. The final model, which added thefts and bus stops, reached 10.87, so it is no better than the rings alone.
+
+The coefficient for median age in the final model is -0.320. The β̂ reading is that, holding the other variables constant, each extra year of median age is associated with a 0.32 percentage point lower poverty rate. The ŷ reading is that if two similar tracts differ by 10 years in median age, the model predicts the older tract to have a poverty rate about 3.2 points lower.
+
+The final residual map still shows red clusters in north and west Philadelphia, almost the same as the baseline. Next, I would measure housing, such as renter share, vacant buildings, and subsidized housing. Renter share is available in the ACS, and vacancy and property data are available from OpenDataPhilly.
+
+The last plot shows that a reliable ACS number does not always mean a small miss. Some tracts with a low CV still have misses of 20 points or more, that means the model might missing something important about those areas, like housing or jobs, and it is not just a survey mistake. Tracts with a very high CV also have bigger misses, so some of that error may come from an uncertain ACS number.
+
+---
