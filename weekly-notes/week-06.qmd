@@ -1,0 +1,50 @@
+---
+title: "Week 6: Variable Transformation and Fixed Effects"
+description: "Log, squared, categories, fixed effects"
+date: 2026-10-09
+---
+
+## What We Did
+
+<!-- CHANGE THIS: replace with your own notes -->
+
+We had online recorded lecture
+
+
+## Key Concepts
+
+**VARIABLE TRANSFORMATION**
+
+
+**Log** -> Better used with skewed data 
+
+**Squared** -> Better used with U shape data
+
+**Categorical** -> Captures jumps and non-smooth patterns, every coefficient is a comparison to a reference group. 
+
+Reasons to use category: 
+
+1. The variable already is one: zoning class, planning district, housing type. 
+
+2. A number behaves like groups: the relationship jumps instead of sloping smoothly. 
+
+
+**FIXED EFFECT**
+
+- absorb everything about a place you did not meansure, tells you where, not why
+
+- a fixed effect is a categorical variable for a group of observations, usually a place: one dummy per neighborhood, district, or county
+
+- everything constant about that place that you cannot measure: reputation, school catchment, transit, history
+
+
+
+
+
+## Reflection
+
+<!-- CHANGE THIS: 3-4 sentences -->
+
+This week I learned that we can change variables to make them fit the data better. The idea I found most interesting is fixed effects, which act like a dummy for each place (like a neighborhood) and soak up everything about that place we can’t measure, so it tells us where something happens but not why.
+
+

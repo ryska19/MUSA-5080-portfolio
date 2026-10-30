@@ -53,7 +53,7 @@
     "href": "weekly-notes/index.html",
     "title": "Weekly Notes",
     "section": "",
-    "text": "Notes from each week of MUSA 5080. New entries appear here automatically — add a .qmd file to this folder and render.\n\n\n\n\n\n\n\n\n\n\n\nWeek 3: Reliability and Visualization\n\n\n…\n\n\n\n\n\nSep 11, 2026\n\n\n\n\n\n\n\nWeek 2: dplyr and Census\n\n\ntable functions and acs data.\n\n\n\n\n\nSep 4, 2026\n\n\n\n\n\n\n\nWeek 1: Getting Set Up\n\n\nFirst impressions, and getting the workflow running.\n\n\n\n\n\nAug 28, 2026\n\n\n\n\n\nNo matching items"
+    "text": "Notes from each week of MUSA 5080. New entries appear here automatically — add a .qmd file to this folder and render.\n\n\n\n\n\n\n\n\n\n\n\nWeek 9: ___\n\n\n…\n\n\n\n\n\nOct 30, 2026\n\n\n\n\n\n\n\nWeek 8: ___\n\n\n…\n\n\n\n\n\nOct 23, 2026\n\n\n\n\n\n\n\nWeek 7: ___\n\n\n…\n\n\n\n\n\nOct 16, 2026\n\n\n\n\n\n\n\nWeek 6: Variable Transformation and Fixed Effects\n\n\nLog, squared, categories, fixed effects\n\n\n\n\n\nOct 9, 2026\n\n\n\n\n\n\n\nWeek 5: ___\n\n\n…\n\n\n\n\n\nSep 25, 2026\n\n\n\n\n\n\n\nWeek 4: ___\n\n\n…\n\n\n\n\n\nSep 18, 2026\n\n\n\n\n\n\n\nWeek 3: Reliability and Visualization\n\n\n…\n\n\n\n\n\nSep 11, 2026\n\n\n\n\n\n\n\nWeek 2: dplyr and Census\n\n\ntable functions and acs data.\n\n\n\n\n\nSep 4, 2026\n\n\n\n\n\n\n\nWeek 1: Getting Set Up\n\n\nFirst impressions, and getting the workflow running.\n\n\n\n\n\nAug 28, 2026\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "about.html",
@@ -523,5 +523,33 @@
     "title": "Assignment 5: House Price Prediction, Chicago",
     "section": "Part 6: Reflection",
     "text": "Part 6: Reflection\n\nRead one coefficient twice: once as β̂, once for what it does to ŷ.\n\nIn our final model, the coefficient for the share of people over 64 is 141.9078 (β). Therefore for every 1% increase in the share of elderly people in a census tract, there is a $141.91 increase in predicted sale price of a home, holding all other variables constant.\n\nWould you hand this model to the Assessor? What would you warn them about?\n\nOur model’s findings are consistent with the Chicago Tribune’s investigation, which found that lower-value homes were assessed at a higher proportion of their actual value than more expensive homes. In our analysis, lower-value homes had an under/overvaluation ratio of 0.451, compared with 1.152 for higher-value homes. Nevertheless, we do not recommend that the Cook County Assessor adopt this model for property assessment, as further validation and evaluation of its potential biases are needed.\nFirst, our final model is still off by $273,157.80. This is an immense range and can skew future assessments to either over- or under-value a home in drastically incorrect ways.\nSecond, while our final model does seem to address issues of spatial autocorrelation from our baseline model, it over-fixes by now under-valuing a much larger share of homes.\nThird, these are both indications that we are “missing something” – either demographic, spatial, or some other metric – that would help better explain sale price. On the other hand, we may have included features that though they contributed to the overall RMSE, they may not actually be useful variables going forward. For example, distance to groceries did not lower the RMSE so much and so may not be worth including in future models.\nFinally, while a tax assessment model may help people lower their taxes, if it is an open source government model, it could be used by for-profit real estate companies to “game the market” in order to aquire under-taxed homes. There is no such thing as no-strings-attached in the real estate market.\n\nWho did what\nName | Main contribution |\n|Luca | Looked at some variables independently and contributed to the final model; reviewed file before submission| |Jonah | Looked at some variables independently and contributed to the final model; added some reflection text | |Rita | Looked at some variables independently and contributed to the final model; created main file | |Ryska | Looked at some variables independently and contributed to the final model; reviewed file before submission|\n\n\nAI Team Statement\nWhat was your team’s AI policy and how was AI used in this assignment? ’\nWe used AI for coding questions but did not really utilize AI coding in our assignment."
+  },
+  {
+    "objectID": "weekly-notes/week-06.html",
+    "href": "weekly-notes/week-06.html",
+    "title": "Week 6: Variable Transformation and Fixed Effects",
+    "section": "",
+    "text": "We had online recorded lecture"
+  },
+  {
+    "objectID": "weekly-notes/week-06.html#what-we-did",
+    "href": "weekly-notes/week-06.html#what-we-did",
+    "title": "Week 6: Variable Transformation and Fixed Effects",
+    "section": "",
+    "text": "We had online recorded lecture"
+  },
+  {
+    "objectID": "weekly-notes/week-06.html#key-concepts",
+    "href": "weekly-notes/week-06.html#key-concepts",
+    "title": "Week 6: Variable Transformation and Fixed Effects",
+    "section": "Key Concepts",
+    "text": "Key Concepts\nVARIABLE TRANSFORMATION\nLog -&gt; Better used with skewed data\nSquared -&gt; Better used with U shape data\nCategorical -&gt; Captures jumps and non-smooth patterns, every coefficient is a comparison to a reference group.\nReasons to use category:\n\nThe variable already is one: zoning class, planning district, housing type.\nA number behaves like groups: the relationship jumps instead of sloping smoothly.\n\nFIXED EFFECT\n\nabsorb everything about a place you did not meansure, tells you where, not why\na fixed effect is a categorical variable for a group of observations, usually a place: one dummy per neighborhood, district, or county\neverything constant about that place that you cannot measure: reputation, school catchment, transit, history"
+  },
+  {
+    "objectID": "weekly-notes/week-06.html#reflection",
+    "href": "weekly-notes/week-06.html#reflection",
+    "title": "Week 6: Variable Transformation and Fixed Effects",
+    "section": "Reflection",
+    "text": "Reflection\n\nThis week I learned that we can change variables to make them fit the data better. The idea I found most interesting is fixed effects, which act like a dummy for each place (like a neighborhood) and soak up everything about that place we can’t measure, so it tells us where something happens but not why."
   }
 ]
